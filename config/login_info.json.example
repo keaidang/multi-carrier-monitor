@@ -1,0 +1,34 @@
+{
+  "18900000000": {
+    "phoneNbr": "BASE64_ENCRYPTED_PHONE_NUMBER_GENERATED_BY_SYSTEM",
+    "token": "RSA_TOKEN_GENERATED_BY_SYSTEM",
+    "userId": "1234567890",
+    "userType": "1",
+    "isDirectCon": "1",
+    "phoneType": "6",
+    "provinceCode": "600103",
+    "cityCode": "8320100",
+    "provinceName": "江苏",
+    "cityName": "南京",
+    "areaCode": "025",
+    "nativeNet": "201",
+    "netType": "0",
+    "accessToken": null,
+    "memberType": "",
+    "operator": "",
+    "isNewUser": "0",
+    "phonenum": "18900000000",
+    "password": "your_telecom_service_password",
+    "createTime": "2026-05-22 12:00:00"
+  },
+  "13000000000": {
+    "phonenum": "13000000000",
+    "password": "",
+    "carrier": "unicom",
+    "cookie": "servicequerybusiness=xxxx.xxx.xxx.xxx|xxxx; SHAREJSESSIONID=xxxx; clientid=xx|x; ...",
+    "appId": "",
+    "provinceName": "江苏",
+    "cityName": "南京",
+    "createTime": "2026-05-22 12:00:00"
+  }
+}

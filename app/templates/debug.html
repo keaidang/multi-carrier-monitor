@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API 调试工具</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .test-btn { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; cursor: pointer; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; font-family: monospace; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>电信/联通套餐监控 - API 调试工具</h1>
+
+    <h2>测试账户接口</h2>
+    <button class="test-btn" onclick="testAllAccounts()">测试所有账户</button>
+    <button class="test-btn" onclick="clearResults()">清空结果</button>
+
+    <div id="results"></div>
+
+    <script>
+        function testAllAccounts() {
+            addResult('正在获取所有已配置账户...\n');
+
+            fetch('http://localhost:10000/all_accounts')
+                .then(r => r.json())
+                .then(res => {
+                    const accounts = res.accounts || [];
+                    if (accounts.length === 0) {
+                        addResult('未配置任何账户！请先在主页登录或导入 Cookie。', 'error');
+                        return;
+                    }
+                    
+                    addResult(`发现 ${accounts.length} 个账户，开始测试...\n`);
+                    let completed = 0;
+                    accounts.forEach(acc => {
+                        const phone = acc.phonenum;
+                        fetch(`http://localhost:10000/account_summary/${phone}`)
+                            .then(r => r.json())
+                            .then(data => {
+                                addResult(`\n✓ ${phone} (${acc.carrier === 'unicom' ? '中国联通' : '中国电信'}) 查询成功`, 'success');
+                                addResult(`余额: ${(data.balance/100).toFixed(2)} 元`);
+                                addResult(`通话: ${data.voiceUsage}/${data.voiceTotal} 分`);
+                                addResult(`流量: ${(data.flowUse/1024/1024/1024).toFixed(2)}GB / ${(data.flowTotal/1024/1024/1024).toFixed(2)}GB`);
+                                completed++;
+                                if (completed === accounts.length) {
+                                    addResult('\n\n所有账户测试完成！', 'success');
+                                }
+                            })
+                            .catch(e => {
+                                addResult(`✗ ${phone} 失败: ${e.message}`, 'error');
+                                completed++;
+                                if (completed === accounts.length) {
+                                    addResult('\n\n测试完成！', 'error');
+                                }
+                            });
+                    });
+                })
+                .catch(e => {
+                    addResult(`获取账户列表失败: ${e.message}`, 'error');
+                });
+        }
+
+        function addResult(text, className = '') {
+            const div = document.createElement('div');
+            div.className = 'result ' + className;
+            div.textContent = text;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

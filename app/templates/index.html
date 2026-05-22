@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>多运营商话费流量智能监控系统</title>
+    <!-- 引入高质感字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080b11;
+            --card-bg: rgba(17, 25, 40, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.2);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.2);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.2);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.2);
+            --info: #06b6d4;
+            --font-outfit: 'Outfit', sans-serif;
+            --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-inter);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* 头部样式 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .logo-section h1 {
+            font-family: var(--font-outfit);
+            font-size: 1.6em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-section p {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* 按钮通用样式 */
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            color: white;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            box-shadow: 0 4px 14px var(--success-glow);
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--success-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            box-shadow: 0 4px 14px var(--danger-glow);
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--danger-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8em;
+            border-radius: 6px;
+        }
+
+        /* 顶部总览大屏 (Summary Dashboard) */
+        .dashboard-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .overview-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s;
+        }
+
+        .overview-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .overview-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: var(--primary);
+        }
+
+        .overview-icon.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .overview-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .overview-info .value {
+            font-family: var(--font-outfit);
+            font-size: 1.8em;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-top: 4px;
+        }
+
+        .overview-info .label {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        /* 主体布局 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+
+        /* 左侧面板 */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+        }
+
+        .add-account-card h3 {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(8, 11, 17, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            font-size: 0.95em;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: rgba(8, 11, 17, 0.9);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .form-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* 账户列表 */
+        .accounts-list-card {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .accounts-list-header {
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 700;
+            font-size: 0.95em;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accounts-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .account-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .account-item:last-child {
+            border-bottom: none;
+        }
+
+        .account-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .account-item.active {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid var(--primary);
+        }
+
+        .account-info {
+            flex: 1;
+            min-width: 0;
+            margin-right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .account-phone {
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            color: #fff;
+            font-size: 1.05em;
+            letter-spacing: 0.02em;
+        }
+
+        .account-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .account-badge {
+            font-size: 0.7em;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.12);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            white-space: nowrap;
+        }
+
+        .account-time {
+            font-size: 0.7em;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .account-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        /* 右侧面板 */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* 查询操作栏 */
+        .query-bar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .query-bar .btn {
+            font-size: 0.95em;
+        }
+
+        /* 统一卡片式折叠容器 */
+        .account-detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .collapsible-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .collapsible-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 卡片头部 */
+        .card-header-bar {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+            user-select: none;
+            transition: background-color 0.3s;
+        }
+
+        .card-header-bar:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* 卡片头部 */
+        .card-header-bar {
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+            user-select: none;
+            transition: all 0.3s ease;
+            gap: 20px;
+        }
+
+        .card-header-bar:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 300px;
+            flex-shrink: 0;
+            min-width: 0;
+        }
+
+        .card-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .card-phone {
+            font-family: var(--font-outfit);
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.01em;
+        }
+
+        .card-location-badge {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--info);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            white-space: nowrap;
+        }
+
+        /* 头部快捷关键指标展示 */
+        .card-quick-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .quick-stat-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .card-header-bar:hover .quick-stat-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .quick-stat-label {
+            font-size: 0.65em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+
+        .quick-stat-value {
+            font-family: var(--font-outfit);
+            font-size: 1.05em;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .quick-stat-value.balance {
+            color: #f43f5e;
+        }
+        .quick-stat-value.voice {
+            color: #6366f1;
+        }
+        .quick-stat-value.flow {
+            color: #10b981;
+        }
+
+        .card-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .chevron-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-header-bar:hover .chevron-icon {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* 卡片折叠内容区 */
+        .card-body-collapsible {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body-collapsible.show {
+            max-height: 2000px; /* 足够容纳展开内容 */
+            opacity: 1;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .card-body-content {
+            padding: 24px;
+        }
+
+        /* 卡片内部指标栅格 */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .detail-item-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .detail-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .detail-card-label {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-card-icon {
+            font-size: 1.2em;
+        }
+
+        .detail-card-value {
+            font-family: var(--font-outfit);
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .detail-card-value span {
+            font-size: 0.5em;
+            color: var(--text-muted);
+            margin-left: 4px;
+        }
+
+        /* 内部进度条 */
+        .progress-box {
+            margin-top: 16px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            margin-bottom: 6px;
+        }
+
+        .progress-name {
+            color: var(--text-muted);
+        }
+
+        .progress-val {
+            font-weight: 600;
+        }
+
+        .progress-track {
+            background: rgba(255, 255, 255, 0.06);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-fill.primary { background: var(--primary); }
+        .progress-fill.success { background: var(--success); }
+        .progress-fill.warning { background: var(--warning); }
+        .progress-fill.danger { background: var(--danger); }
+        .progress-fill.info-infinite {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+            background-size: 200% 100%;
+            animation: infinite-slide 3s linear infinite;
+        }
+
+        @keyframes infinite-slide {
+            0% { background-position: 0% 50%; }
+            100% { background-position: -200% 50%; }
+        }
+
+        /* 底部明细 */
+        .packages-section {
+            border-top: 1px solid var(--card-border);
+            padding-top: 20px;
+            margin-top: 8px;
+        }
+
+        .packages-title {
+            font-size: 0.95em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .packages-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .package-item {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .package-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .package-item-title {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .package-item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78em;
+            color: var(--text-muted);
+        }
+
+        .package-item-use strong {
+            color: #fff;
+        }
+
+        /* 消息提示框 */
+        .alert-box {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 360px;
+        }
+
+        .alert {
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: #fff;
+            font-size: 0.9em;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .alert.success { border-left: 4px solid var(--success); }
+        .alert.error { border-left: 4px solid var(--danger); }
+        .alert.warning { border-left: 4px solid var(--warning); }
+        .alert.info { border-left: 4px solid var(--primary); }
+
+        /* 模态弹框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(8, 11, 17, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalScaleUp {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .modal-body {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            background: var(--card-bg);
+            border: 1px dashed var(--card-border);
+            border-radius: 16px;
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            backdrop-filter: blur(12px);
+        }
+
+        .empty-state-icon {
+            font-size: 2.5em;
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .empty-state-desc {
+            font-size: 0.85em;
+            max-width: 320px;
+            line-height: 1.4;
+        }
+
+        /* 页面加载等待指示 */
+        .global-loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(8, 11, 17, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1200;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .global-loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 0.95em;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .carrier-badge {
+            font-size: 0.7em;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+        .carrier-badge.carrier-telecom {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .carrier-badge.carrier-unicom {
+            color: #ff5722;
+            background: rgba(255, 87, 34, 0.12);
+            border: 1px solid rgba(255, 87, 34, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                height: auto;
+                overflow: auto;
+                display: block;
+            }
+            .container {
+                height: auto;
+                max-width: 100%;
+            }
+            .main-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
+            }
+            .left-panel, .right-panel {
+                overflow: visible;
+                height: auto;
+                padding-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .card-header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            .card-quick-stats {
+                margin-left: 0;
+                margin-right: 0;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .card-header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <div class="header">
+            <div class="logo-section">
+                <h1>📊 多运营商话费流量智能监控系统</h1>
+                <p>实时多运营商账户监控 · 自动区分展示 · 高颜值数据可视化看板</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="refreshAllAccounts()">
+                    🔄 刷新账户列表
+                </button>
+            </div>
+        </div>
+
+        <!-- 顶部汇总指标大屏 (Summary Dashboard) -->
+        <div class="dashboard-overview" id="dashboardOverview" style="display: none;">
+            <div class="overview-card">
+                <div class="overview-icon">📱</div>
+                <div class="overview-info">
+                    <div class="label">已关联账户</div>
+                    <div class="value" id="statTotalAccounts">0</div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="overview-icon success">💰</div>
+                <div class="overview-info">
+                    <div class="label">账户总余额</div>
+                    <div class="value" id="statTotalBalance">0.00<span>元</span></div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="overview-icon warning">🌐</div>
+                <div class="overview-info">
+                    <div class="label">通用总流量</div>
+                    <div class="value" id="statTotalCommonFlow">0.00 / 0.00<span>GB</span></div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="overview-icon" style="color: var(--info); background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.2);">📺</div>
+                <div class="overview-info">
+                    <div class="label">定向总流量</div>
+                    <div class="value" id="statTotalSpecialFlow">0.00 / 0.00<span>GB</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主布局 -->
+        <div class="main-layout">
+            <!-- 左侧：账户配置与列表 -->
+            <div class="left-panel">
+                <!-- 添加账户卡片 -->
+                <div class="card add-account-card">
+                    <h3 id="addAccountTitle">➕ 添加运营商账户</h3>
+                    
+                    <!-- 运营商选择 -->
+                    <div class="form-group">
+                        <label>运营商</label>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary btn-sm" id="carrier-telecom" onclick="selectCarrier('telecom')" style="flex: 1; justify-content: center; background: rgba(99,102,241,0.15); border-color: var(--primary);">中国电信</button>
+                            <button class="btn btn-secondary btn-sm" id="carrier-unicom" onclick="selectCarrier('unicom')" style="flex: 1; justify-content: center;">中国联通</button>
+                        </div>
+                    </div>
+
+                    <!-- 登录方式选择 (仅联通支持) -->
+                    <div class="form-group" id="loginMethodGroup" style="display: none;">
+                        <label>登录方式</label>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary btn-sm" id="method-password" onclick="selectLoginMethod('password')" style="flex: 1; min-width: 80px; justify-content: center; background: rgba(99,102,241,0.15); border-color: var(--primary);">密码登录</button>
+                            <button class="btn btn-secondary btn-sm" id="method-sms" onclick="selectLoginMethod('sms')" style="flex: 1; min-width: 80px; justify-content: center;">短信登录</button>
+                            <button class="btn btn-secondary btn-sm" id="method-cookie" onclick="selectLoginMethod('cookie')" style="flex: 1; min-width: 80px; justify-content: center;">Cookie导入</button>
+                        </div>
+                    </div>
+
+                    <!-- 手机号码 -->
+                    <div class="form-group">
+                        <label>手机号码</label>
+                        <input type="text" id="newPhone" placeholder="请输入11位电信手机号" maxlength="11">
+                    </div>
+
+                    <!-- 查询密码 -->
+                    <div class="form-group" id="passwordGroup">
+                        <label>查询密码</label>
+                        <input type="password" id="newPassword" placeholder="请输入6位服务密码" maxlength="20">
+                    </div>
+
+                    <!-- 短信验证码 -->
+                    <div class="form-group" id="smsGroup" style="display: none;">
+                        <label>验证码</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="smsCode" placeholder="请输入短信验证码" maxlength="6" style="flex: 1;">
+                            <button class="btn btn-primary btn-sm" id="btnSendSms" onclick="sendSmsCode()" style="padding: 0 12px; white-space: nowrap; font-size: 0.8em;">获取验证码</button>
+                        </div>
+                    </div>
+
+                    <!-- Cookie -->
+                    <div class="form-group" id="cookieGroup" style="display: none;">
+                        <label>Cookie</label>
+                        <input type="text" id="cookieContent" placeholder="请输入抓包获取的 Cookie 内容">
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button class="btn btn-success btn-sm" onclick="addAccount()" style="flex: 2; justify-content: center;">验证并保存</button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearAddForm()" style="flex: 1; justify-content: center;">清空</button>
+                    </div>
+                </div>
+
+                <!-- 账户列表 -->
+                <div class="card accounts-list-card">
+                    <div class="accounts-list-header">
+                        <span>已登录账户</span>
+                        <span class="account-badge" id="accountCount" style="background: rgba(255,255,255,0.08); color: white; border: none;">0</span>
+                    </div>
+                    <div class="accounts-list" id="accountsList">
+                        <div style="padding: 30px 20px; text-align: center; color: var(--text-muted); font-size: 0.9em;">
+                            暂无账户，请在上方添加
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：详情面板 -->
+            <div class="right-panel">
+                <!-- 操作工具条 -->
+                <div class="card query-bar">
+                    <button class="btn btn-primary" onclick="queryAll()">
+                        ⚡ 一键查询所有账户
+                    </button>
+                </div>
+
+                <!-- 折叠列表容器 -->
+                <div class="account-detail-list" id="detailContainer" style="display: none;"></div>
+
+                <!-- 空状态展示 -->
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-title">暂无数据</div>
+                    <div class="empty-state-desc">请在左侧选择具体账户进行查询，或点击上方的“一键查询所有账户”拉取实时用量看板。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除账户确认弹窗 -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-title">确认删除账户</div>
+            <div class="modal-body">
+                您确定要删除账户 <strong id="deletePhoneNum" style="color: #fff;"></strong> 吗？
+                <br><br>
+                <span style="color: var(--danger); font-weight: 500;">⚠️ 删除后将清除该账户的本地登录凭证与 Token。</span>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" onclick="closeDeleteModal()">取消</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmDelete()">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗消息容器 -->
+    <div class="alert-box" id="alertBox"></div>
+
+    <!-- 全局加载等待遮罩 -->
+    <div class="global-loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">正在拉取电信实时数据，请稍候...</div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:10000';
+        let currentPhone = null;
+        let deleteTarget = null;
+        let accountsData = {}; // 存储所有已查询出来的账户详细数据
+        let currentCarrier = 'telecom';
+        let currentLoginMethod = 'password';
+
+        // ========== 消息提示 (Toast) ==========
+        function showMessage(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.innerHTML = `<span>${message}</span>`;
+            alertBox.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateY(-10px)';
+                alertDiv.style.transition = 'all 0.3s ease';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3500);
+        }
+
+        // ========== 加载状态控制 ==========
+        function showLoading(show, text = '正在拉取套餐实时数据，请稍候...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const textElem = document.getElementById('loadingText');
+            if (show) {
+                textElem.textContent = text;
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        // ========== 运营商与登录方式切换 ==========
+        function selectCarrier(carrier) {
+            currentCarrier = carrier;
+            const telecomBtn = document.getElementById('carrier-telecom');
+            const unicomBtn = document.getElementById('carrier-unicom');
+            const methodGroup = document.getElementById('loginMethodGroup');
+            
+            // 重置状态
+            telecomBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+            telecomBtn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            unicomBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+            unicomBtn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            
+            if (carrier === 'telecom') {
+                telecomBtn.style.background = 'rgba(99, 102, 241, 0.15)';
+                telecomBtn.style.borderColor = 'var(--primary)';
+                methodGroup.style.display = 'none';
+                selectLoginMethod('password'); // 电信仅支持密码
+                document.getElementById('newPhone').placeholder = '请输入11位电信手机号';
+            } else {
+                unicomBtn.style.background = 'rgba(255, 87, 34, 0.15)';
+                unicomBtn.style.borderColor = '#ff5722';
+                methodGroup.style.display = 'block';
+                document.getElementById('newPhone').placeholder = '请输入11位联通手机号';
+                selectLoginMethod(currentLoginMethod);
+            }
+        }
+
+        function selectLoginMethod(method) {
+            currentLoginMethod = method;
+            const passBtn = document.getElementById('method-password');
+            const smsBtn = document.getElementById('method-sms');
+            const cookieBtn = document.getElementById('method-cookie');
+            
+            const passGroup = document.getElementById('passwordGroup');
+            const smsGroup = document.getElementById('smsGroup');
+            const cookieGroup = document.getElementById('cookieGroup');
+            
+            // 重置按钮样式
+            [passBtn, smsBtn, cookieBtn].forEach(btn => {
+                btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            });
+            
+            const color = currentCarrier === 'unicom' ? '#ff5722' : 'var(--primary)';
+            const bg = currentCarrier === 'unicom' ? 'rgba(255, 87, 34, 0.15)' : 'rgba(99, 102, 241, 0.15)';
+            
+            const activeBtn = method === 'password' ? passBtn : (method === 'sms' ? smsBtn : cookieBtn);
+            activeBtn.style.background = bg;
+            activeBtn.style.borderColor = color;
+            
+            // 显隐输入项
+            passGroup.style.display = method === 'password' ? 'block' : 'none';
+            smsGroup.style.display = method === 'sms' ? 'block' : 'none';
+            cookieGroup.style.display = method === 'cookie' ? 'block' : 'none';
+            
+            if (method === 'password') {
+                document.getElementById('newPassword').placeholder = currentCarrier === 'telecom' ? '请输入6位服务密码' : '请输入服务密码';
+            }
+        }
+
+        // ========== 账户表单管理 ==========
+        function clearAddForm() {
+            document.getElementById('newPhone').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('smsCode').value = '';
+            document.getElementById('cookieContent').value = '';
+        }
+
+        async function sendSmsCode() {
+            const phone = document.getElementById('newPhone').value.trim();
+            if (!phone || !/^\d{11}$/.test(phone)) {
+                showMessage('请先输入有效的11位手机号', 'warning');
+                return;
+            }
+            
+            const btn = document.getElementById('btnSendSms');
+            btn.disabled = true;
+            btn.textContent = '发送中...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/send_sms_code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phonenum: phone })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('短信验证码发送成功！', 'success');
+                    let count = 60;
+                    btn.textContent = `${count}s`;
+                    const timer = setInterval(() => {
+                        count--;
+                        if (count <= 0) {
+                            clearInterval(timer);
+                            btn.disabled = false;
+                            btn.textContent = '获取验证码';
+                        } else {
+                            btn.textContent = `${count}s`;
+                        }
+                    }, 1000);
+                } else {
+                    showMessage(`发送失败: ${data.message || '网关响应错误'}`, 'error');
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                }
+            } catch (e) {
+                showMessage(`请求异常: ${e.message}`, 'error');
+                btn.disabled = false;
+                btn.textContent = '获取验证码';
+            }
+        }
+
+        async function addAccount() {
+            const phone = document.getElementById('newPhone').value.trim();
+            if (!phone || !/^\d{11}$/.test(phone)) {
+                showMessage('请输入有效的11位手机号', 'warning');
+                return;
+            }
+            
+            let url = '';
+            let payload = {};
+            
+            if (currentCarrier === 'telecom') {
+                const password = document.getElementById('newPassword').value.trim();
+                if (!password) {
+                    showMessage('请输入电信服务密码', 'warning');
+                    return;
+                }
+                if (!/^\d{6}$/.test(password)) {
+                    showMessage('电信查询密码必须是6位数字', 'error');
+                    return;
+                }
+                url = `${API_BASE_URL}/login`;
+                payload = { phonenum: phone, password: password, carrier: 'telecom' };
+            } else { // unicom
+                if (currentLoginMethod === 'password') {
+                    const password = document.getElementById('newPassword').value.trim();
+                    if (!password) {
+                        showMessage('请输入联通查询密码', 'warning');
+                        return;
+                    }
+                    url = `${API_BASE_URL}/login`;
+                    payload = { phonenum: phone, password: password, carrier: 'unicom' };
+                } else if (currentLoginMethod === 'sms') {
+                    const code = document.getElementById('smsCode').value.trim();
+                    if (!code) {
+                        showMessage('请输入短信验证码', 'warning');
+                        return;
+                    }
+                    url = `${API_BASE_URL}/login_sms`;
+                    payload = { phonenum: phone, smscode: code };
+                } else if (currentLoginMethod === 'cookie') {
+                    const cookie = document.getElementById('cookieContent').value.trim();
+                    if (!cookie) {
+                        showMessage('请输入 Cookie 内容', 'warning');
+                        return;
+                    }
+                    url = `${API_BASE_URL}/login_cookie`;
+                    payload = { phonenum: phone, cookie: cookie };
+                }
+            }
+            
+            showLoading(true, '正在对运营商网关发起关联，请稍候...');
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(`账户 ${phone} 关联并保存成功！`, 'success');
+                    clearAddForm();
+                    await refreshAllAccounts();
+                } else {
+                    const errorMsg = data.message || (data.responseData && data.responseData.resultMsg) || '网关响应错误';
+                    showMessage(`关联失败: ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`网络请求异常: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ========== 获取账户列表 ==========
+        async function refreshAllAccounts() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/all_accounts`);
+                const data = await response.json();
+
+                const accountsList = document.getElementById('accountsList');
+                const accountCount = document.getElementById('accountCount');
+
+                if (!data.accounts || data.accounts.length === 0) {
+                    accountsList.innerHTML = `
+                        <div style="padding: 30px 20px; text-align: center; color: var(--text-muted); font-size: 0.9em;">
+                            暂无账户，请在上方添加
+                        </div>`;
+                    accountCount.textContent = '0';
+                    return;
+                }
+
+                accountCount.textContent = data.accounts.length;
+
+                accountsList.innerHTML = data.accounts.map(account => {
+                    const location = account.cityName ? `${account.provinceName} ${account.cityName}` : account.provinceName || '';
+                    const carrier = account.carrier || 'telecom';
+                    const carrierBadge = `<span class="carrier-badge ${carrier === 'unicom' ? 'carrier-unicom' : 'carrier-telecom'}">${carrier === 'unicom' ? '联通' : '电信'}</span>`;
+                    
+                    return `
+                        <div class="account-item ${currentPhone === account.phonenum ? 'active' : ''}" 
+                             onclick="selectAccount('${account.phonenum}')">
+                            <div class="account-info">
+                                <div class="account-phone" style="display: flex; align-items: center; gap: 8px;">
+                                    ${account.phonenum}
+                                    ${carrierBadge}
+                                </div>
+                                <div class="account-meta">
+                                    ${location && !location.includes('账户') && !location.includes('联通 账户') ? `<span class="account-badge">${location}</span>` : (location ? `<span class="account-badge">${location}</span>` : '')}
+                                    <span class="account-time">${new Date(account.createTime).toLocaleDateString('zh-CN')}</span>
+                                </div>
+                            </div>
+                            <div class="account-actions">
+                                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); selectAccount('${account.phonenum}')">查询</button>
+                                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteAccount('${account.phonenum}')">删除</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                showMessage('刷新账户列表失败: ' + error.message, 'error');
+            }
+        }
+
+        function selectAccount(phone) {
+            currentPhone = phone;
+            refreshAllAccounts();
+            querySingleAccount(phone);
+        }
+
+        // ========== 删除账户 ==========
+        function deleteAccount(phone) {
+            deleteTarget = phone;
+            document.getElementById('deletePhoneNum').textContent = phone;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteTarget = null;
+        }
+
+        async function confirmDelete() {
+            if (!deleteTarget) return;
+            try {
+                const response = await fetch(`${API_BASE_URL}/delete_account/${deleteTarget}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showMessage(`账户 ${deleteTarget} 已成功删除`, 'success');
+                    closeDeleteModal();
+                    if (currentPhone === deleteTarget) {
+                        currentPhone = null;
+                    }
+                    delete accountsData[deleteTarget];
+                    await refreshAllAccounts();
+                    renderAllDetails();
+                } else {
+                    const data = await response.json();
+                    showMessage(`删除失败: ${data.message || '未知错误'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('网络请求异常: ' + error.message, 'error');
+            }
+        }
+
+        // ========== 数据查询逻辑 ==========
+
+        // 单个账户查询
+        async function querySingleAccount(phone) {
+            showLoading(true, `正在查询账户 ${phone} 的实时用量明细...`);
+            try {
+                const response = await fetch(`${API_BASE_URL}/account_summary/${phone}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    accountsData[phone] = data; // 缓存该账户数据
+                    renderAllDetails();
+                    // 默认展开当前查询 of 账户
+                    setTimeout(() => {
+                        const targetBody = document.getElementById(`details-${phone}`);
+                        const targetChevron = document.getElementById(`chevron-${phone}`);
+                        if (targetBody && !targetBody.classList.contains('show')) {
+                            targetBody.classList.add('show');
+                            targetChevron.style.transform = 'rotate(180deg)';
+                        }
+                    }, 50);
+                    showMessage(`账户 ${phone} 数据更新成功！`, 'success');
+                } else {
+                    showMessage(`查询账户 ${phone} 失败: ${data.message || '未知错误'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`网络异常: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 一键查询所有账户
+        async function queryAll() {
+            showLoading(true, '正在批量拉取所有账户的套餐数据，请稍候...');
+            try {
+                const response = await fetch(`${API_BASE_URL}/all_accounts`);
+                const data = await response.json();
+
+                if (!data.accounts || data.accounts.length === 0) {
+                    showMessage('当前系统中暂无已登录账户，请先在左侧添加', 'warning');
+                    showLoading(false);
+                    return;
+                }
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (let i = 0; i < data.accounts.length; i++) {
+                    const account = data.accounts[i];
+                    try {
+                        const res = await fetch(`${API_BASE_URL}/account_summary/${account.phonenum}`);
+                        if (res.ok) {
+                            const detail = await res.json();
+                            accountsData[account.phonenum] = detail;
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+                    } catch (e) {
+                        console.error(`批量拉取 ${account.phonenum} 数据出错:`, e);
+                        failCount++;
+                    }
+                    if (i < data.accounts.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                    }
+                }
+
+                if (Object.keys(accountsData).length > 0) {
+                    renderAllDetails();
+                    const bodies = document.querySelectorAll('.card-body-collapsible');
+                    const chevrons = document.querySelectorAll('.chevron-icon');
+                    bodies.forEach(b => b.classList.add('show'));
+                    chevrons.forEach(c => c.style.transform = 'rotate(180deg)');
+
+                    if (failCount === 0) {
+                        showMessage(`已成功更新全部 ${successCount} 个账户的实时套餐用量！`, 'success');
+                    } else {
+                        showMessage(`已更新 ${successCount} 个账户，但有 ${failCount} 个账户查询失败，请确认其登录状态。`, 'warning');
+                    }
+                } else {
+                    showMessage('批量查询失败，请检查各账户状态或重新验证。', 'error');
+                }
+            } catch (error) {
+                showMessage(`批量拉取异常: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ========== 折叠与展开控制 ==========
+        function toggleCard(phone) {
+            const body = document.getElementById(`details-${phone}`);
+            const chevron = document.getElementById(`chevron-${phone}`);
+            if (!body) return;
+
+            if (body.classList.contains('show')) {
+                body.classList.remove('show');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                body.classList.add('show');
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // ========== 数据大屏与卡片渲染 ==========
+        function updateDashboardSummary() {
+            const overviewDiv = document.getElementById('dashboardOverview');
+            const keys = Object.keys(accountsData);
+
+            if (keys.length === 0) {
+                overviewDiv.style.display = 'none';
+                return;
+            }
+
+            let totalBalance = 0;
+            let hasValidBalance = false;
+            let totalCommonUse = 0;
+            let totalCommonTotal = 0;
+            let totalSpecialUse = 0;
+            let totalSpecialTotal = 0;
+            let hasSpecialUnlimited = false;
+
+            keys.forEach(k => {
+                const acc = accountsData[k];
+                if (acc.balance >= 0) {
+                    totalBalance += acc.balance;
+                    hasValidBalance = true;
+                }
+                totalCommonUse += (acc.commonUse || 0);
+                totalCommonTotal += (acc.commonTotal || 0);
+                totalSpecialUse += (acc.specialUse || 0);
+                if (acc.specialTotal < 0) {
+                    hasSpecialUnlimited = true;
+                } else {
+                    totalSpecialTotal += (acc.specialTotal || 0);
+                }
+            });
+
+            document.getElementById('statTotalAccounts').textContent = keys.length;
+            document.getElementById('statTotalBalance').innerHTML = hasValidBalance ? `${(totalBalance / 100).toFixed(2)}<span>元</span>` : `--<span>元</span>`;
+            
+            const comUsedGb = (totalCommonUse / 1024 / 1024 / 1024).toFixed(2);
+            const comTotalGb = (totalCommonTotal / 1024 / 1024 / 1024).toFixed(2);
+            document.getElementById('statTotalCommonFlow').innerHTML = `${comUsedGb} / ${comTotalGb}<span>GB</span>`;
+
+            const specUsedGb = (totalSpecialUse / 1024 / 1024 / 1024).toFixed(2);
+            const specTotalGb = hasSpecialUnlimited ? "∞" : (totalSpecialTotal / 1024 / 1024 / 1024).toFixed(2);
+            document.getElementById('statTotalSpecialFlow').innerHTML = `${specUsedGb} / ${specTotalGb}<span>GB</span>`;
+
+            overviewDiv.style.display = 'grid';
+        }
+
+        function getStatusColor(used, total) {
+            if (total <= 0) return '#6b7280'; // ⚫
+            const percent = (used / total) * 100;
+            if (percent >= 100) return '#ef4444'; // 🔴
+            if (percent > 85) return '#f59e0b';   // 🟠
+            if (percent > 60) return '#eab308';   // 🟡
+            return '#10b981';                     // 🟢
+        }
+
+        function renderAllDetails() {
+            const container = document.getElementById('detailContainer');
+            const emptyState = document.getElementById('emptyState');
+            const keys = Object.keys(accountsData);
+
+            updateDashboardSummary();
+
+            if (keys.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.style.display = 'flex';
+
+            container.innerHTML = keys.map(phone => {
+                const data = accountsData[phone];
+                const isUnicom = data.carrier === 'unicom';
+
+                // 基本核心参数计算
+                const balanceVal = data.balance < 0 ? "--" : (data.balance / 100).toFixed(2);
+                
+                const flowUseGb = (data.flowUse / 1024 / 1024 / 1024).toFixed(2);
+                const flowTotalGb = (data.flowTotal / 1024 / 1024 / 1024).toFixed(2);
+                const flowPercent = Math.min(100, Math.round(data.flowUse / Math.max(1, data.flowTotal) * 100));
+                
+                const voiceUse = data.voiceTotal < 0 ? "--" : (data.voiceUsage || 0);
+                const voiceTotal = data.voiceTotal < 0 ? "--" : (data.voiceTotal || 0);
+                const voicePercent = data.voiceTotal > 0 ? Math.min(100, Math.round((data.voiceUsage || 0) / data.voiceTotal * 100)) : 0;
+
+                const commonUseGb = (data.commonUse / 1024 / 1024 / 1024).toFixed(2);
+                const commonTotalGb = (data.commonTotal / 1024 / 1024 / 1024).toFixed(2);
+                const commonPercent = Math.min(100, Math.round(data.commonUse / Math.max(1, data.commonTotal) * 100));
+
+                const specialUseGb = (data.specialUse / 1024 / 1024 / 1024).toFixed(2);
+                const isSpecialUnlimited = data.specialTotal < 0;
+                const specialTotalGb = isSpecialUnlimited ? "∞" : (data.specialTotal / 1024 / 1024 / 1024).toFixed(2);
+                const specialPercent = isSpecialUnlimited ? 0 : Math.min(100, Math.round(data.specialUse / Math.max(1, data.specialTotal) * 100));
+
+                const location = data.cityName ? `${data.provinceName} ${data.cityName}` : data.provinceName || '';
+                const dotColor = getStatusColor(data.flowUse, data.flowTotal);
+                const carrierBadge = `<span class="carrier-badge ${isUnicom ? 'carrier-unicom' : 'carrier-telecom'}">${isUnicom ? '联通' : '电信'}</span>`;
+
+                // 流量包明细 HTML
+                const flowItems = data.flowItems || [];
+                let flowItemsHtml = '';
+                if (flowItems.length > 0) {
+                    flowItemsHtml = `
+                        <div class="packages-section">
+                            <div class="packages-title">📦 套餐流量包详细分解</div>
+                            <div class="packages-list">
+                                ${flowItems.map(item => {
+                                    const itemUse = (item.use / 1024 / 1024 / 1024).toFixed(2);
+                                    const isItemUnlimited = item.total < 0;
+                                    const itemTotal = isItemUnlimited ? "∞" : (item.total / 1024 / 1024 / 1024).toFixed(2) + " GB";
+                                    const itemPercent = isItemUnlimited ? 0 : Math.min(100, Math.round(item.use / Math.max(1, item.total) * 100));
+                                    const isOver = !isItemUnlimited && item.balance < 0;
+                                    const itemFillColor = isItemUnlimited ? 'info-infinite' : isOver ? 'danger' : itemPercent > 85 ? 'warning' : 'success';
+                                    
+                                    return `
+                                        <div class="package-item">
+                                            <div class="package-item-title">${item.name}</div>
+                                            <div class="progress-box" style="margin-top:0; margin-bottom: 8px;">
+                                                <div class="progress-track" style="height: 5px;">
+                                                    <div class="progress-fill ${itemFillColor}" style="width: ${isItemUnlimited ? '100' : itemPercent}%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="package-item-details">
+                                                <span class="package-item-use">已用 <strong>${itemUse}</strong> / ${itemTotal}</span>
+                                                ${isOver ? `<span style="color: var(--danger); font-weight:700;">超出 ${(-item.balance / 1024 / 1024 / 1024).toFixed(2)}GB</span>` : `<span style="color: var(--text-muted);">${isItemUnlimited ? '不限量' : `${itemPercent}%`}</span>`}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="collapsible-card" id="card-${phone}">
+                        <!-- 折叠头部条 -->
+                        <div class="card-header-bar" onclick="toggleCard('${phone}')">
+                            <div class="card-header-left">
+                                <span class="card-status-dot" style="background-color: ${dotColor}; box-shadow: 0 0 10px ${dotColor};"></span>
+                                <span class="card-phone" style="display:flex; align-items:center; gap:8px;">
+                                    ${phone}
+                                    ${carrierBadge}
+                                </span>
+                                ${location ? `<span class="card-location-badge">${location}</span>` : ''}
+                            </div>
+                            <!-- 头部精简数据 -->
+                            <div class="card-quick-stats">
+                                <div class="quick-stat-item">
+                                    <span class="quick-stat-label">话费</span>
+                                    <span class="quick-stat-value balance">${balanceVal}${data.balance < 0 ? "" : " 元"}</span>
+                                </div>
+                                <div class="quick-stat-item">
+                                    <span class="quick-stat-label">通话</span>
+                                    <span class="quick-stat-value voice">${voiceUse}${data.voiceTotal < 0 ? "" : " / " + voiceTotal + " 分"}</span>
+                                </div>
+                                <div class="quick-stat-item wide">
+                                    <span class="quick-stat-label">通用流量</span>
+                                    <span class="quick-stat-value flow">${commonUseGb}/${commonTotalGb} GB</span>
+                                </div>
+                                <div class="quick-stat-item wide">
+                                    <span class="quick-stat-label">定向流量</span>
+                                    <span class="quick-stat-value flow" style="color: var(--info);">${specialUseGb}/${isSpecialUnlimited ? '∞' : specialTotalGb + ' GB'}</span>
+                                </div>
+                            </div>
+                            <!-- 头部按钮和折叠箭头 -->
+                            <div class="card-header-actions">
+                                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); querySingleAccount('${phone}')">刷新</button>
+                                <span class="chevron-icon" id="chevron-${phone}">▼</span>
+                            </div>
+                        </div>
+
+                        <!-- 折叠展开区域 -->
+                        <div class="card-body-collapsible" id="details-${phone}">
+                            <div class="card-body-content">
+                                <!-- 三宫格详细统计数据 -->
+                                <div class="detail-grid">
+                                    <!-- 余额卡片 -->
+                                    <div class="detail-item-card" style="border-top: 4px solid var(--danger);">
+                                        <div class="detail-card-header">
+                                            <span class="detail-card-label">账户剩余话费</span>
+                                            <span class="detail-card-icon">💰</span>
+                                        </div>
+                                        <div class="detail-card-value" style="color: #f43f5e;">
+                                            ${data.balance < 0 ? "--" : balanceVal + "<span>元</span>"}
+                                        </div>
+                                        <div style="font-size:0.75em; color:var(--text-muted); margin-top:12px;">
+                                            ${data.balance < 0 ? "该运营商账户暂不支持查询话费余额" : "账户计费正常，截止至今"}
+                                        </div>
+                                    </div>
+                                    <!-- 通话卡片 -->
+                                    <div class="detail-item-card" style="border-top: 4px solid var(--primary);">
+                                        <div class="detail-card-header">
+                                            <span class="detail-card-label">语音通话时长</span>
+                                            <span class="detail-card-icon">📞</span>
+                                        </div>
+                                        <div class="detail-card-value" style="color: #6366f1;">
+                                            ${data.voiceTotal < 0 ? "--" : voiceUse + "<span>/ " + voiceTotal + " 分钟</span>"}
+                                        </div>
+                                        ${data.voiceTotal >= 0 ? `
+                                        <div class="progress-box">
+                                            <div class="progress-info">
+                                                <span class="progress-name">总时长进度</span>
+                                                <span class="progress-val">${voicePercent}%</span>
+                                            </div>
+                                            <div class="progress-track">
+                                                <div class="progress-fill primary" style="width: ${voicePercent}%"></div>
+                                            </div>
+                                        </div>` : `<div style="font-size:0.75em; color:var(--text-muted); margin-top:12px;">该运营商账户暂不支持查询语音通话时长</div>`}
+                                    </div>
+                                    <!-- 总流量卡片 -->
+                                    <div class="detail-item-card" style="border-top: 4px solid var(--success);">
+                                        <div class="detail-card-header">
+                                            <span class="detail-card-label">当月已用总流量</span>
+                                            <span class="detail-card-icon">📊</span>
+                                        </div>
+                                        <div class="detail-card-value" style="color: #10b981;">
+                                            ${isSpecialUnlimited ? `${flowUseGb}<span> GB</span>` : `${flowUseGb}<span>/ ${flowTotalGb} GB</span>`}
+                                        </div>
+                                        <div class="progress-box">
+                                            <div class="progress-info">
+                                                <span class="progress-name">${isSpecialUnlimited ? '总流量已用量 (含不限量专用)' : '总流量使用率'}</span>
+                                                <span class="progress-val">${isSpecialUnlimited ? '不限量' : `${flowPercent}%`}</span>
+                                            </div>
+                                            <div class="progress-track">
+                                                <div class="progress-fill ${isSpecialUnlimited ? 'info-infinite' : 'success'}" style="width: ${isSpecialUnlimited ? '100' : flowPercent}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 细分流量类型展示 -->
+                                <div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 24px;">
+                                    <div class="detail-item-card">
+                                        <div class="detail-card-label" style="font-size:0.8em; margin-bottom: 12px;">🇨🇳 国内通用流量</div>
+                                        <div style="font-size:1.4em; font-weight:700; font-family:var(--font-outfit);">${commonUseGb} / ${commonTotalGb} GB</div>
+                                        <div class="progress-box" style="margin-top: 10px;">
+                                            <div class="progress-info" style="font-size: 0.75em;">
+                                                <span class="progress-name">通用流量使用率</span>
+                                                <span class="progress-val">${commonPercent}%</span>
+                                            </div>
+                                            <div class="progress-track" style="height: 5px;">
+                                                <div class="progress-fill success" style="width: ${commonPercent}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item-card">
+                                        <div class="detail-card-label" style="font-size:0.8em; margin-bottom: 12px;">📺 专属定向/专用流量</div>
+                                        <div style="font-size:1.4em; font-weight:700; font-family:var(--font-outfit);">
+                                            ${isSpecialUnlimited ? `${specialUseGb} GB <span style="font-size:0.6em; color:var(--text-muted); font-weight:normal;">/ ∞</span>` : `${specialUseGb} / ${specialTotalGb} GB`}
+                                        </div>
+                                        <div class="progress-box" style="margin-top: 10px;">
+                                            <div class="progress-info" style="font-size: 0.75em;">
+                                                <span class="progress-name">${isSpecialUnlimited ? '已用专属流量' : '专用流量使用率'}</span>
+                                                <span class="progress-val">${isSpecialUnlimited ? '不限量' : `${specialPercent}%`}</span>
+                                            </div>
+                                            <div class="progress-track" style="height: 5px;">
+                                                <div class="progress-fill ${isSpecialUnlimited ? 'info-infinite' : 'primary'}" style="width: ${isSpecialUnlimited ? '100' : specialPercent}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 流量包折叠层 -->
+                                ${flowItemsHtml}
+
+                                <!-- 文本格式明细 (可复制) -->
+                                <div class="text-format-section" style="margin-top: 24px; border-top: 1px solid var(--card-border); padding-top: 20px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <span style="font-size:0.9em; font-weight:700; color: #fff;">📋 文本格式明细 (一键复制)</span>
+                                        <button onclick="navigator.clipboard.writeText(document.getElementById('txt-${phone}').textContent).then(() => showMessage('已成功复制文本明细到剪贴板！', 'success'))" 
+                                                onmouseover="this.style.background='rgba(255,255,255,0.12)'; this.style.borderColor='var(--text-muted)'"
+                                                onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='var(--card-border)'"
+                                                style="background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); border-radius: 6px; color: #fff; padding: 4px 12px; font-size: 0.75em; cursor: pointer; transition: all 0.2s;">
+                                            📋 复制
+                                        </button>
+                                    </div>
+                                    <pre id="txt-${phone}" style="background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px; font-family: monospace; font-size: 0.85em; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; margin: 0; line-height: 1.6; text-align: left;">${data.formattedText}</pre>
+                                </div>
+
+                                <div style="margin-top: 20px; font-size: 0.8em; color: var(--text-muted); text-align: right;">
+                                    📅 数据最后更新于: ${data.createTime}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 页面初始化加载
+        window.addEventListener('load', async () => {
+            await refreshAllAccounts();
+        });
+    </script>
+</body>
+</html>
+>
+</html>
